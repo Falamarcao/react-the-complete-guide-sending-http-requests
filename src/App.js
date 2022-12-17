@@ -6,12 +6,17 @@ import "./App.css";
 function App() {
   const [movies, setMovies] = useState({ hasData: false, data: [] });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleFetchMovies = async () => {
     setIsLoading(true);
-    const response = await fetch("https://swapi.dev/api/films/");
+    try {
+      const response = await fetch("https://swapi.dev/api/films/");
 
-    if (response?.status === 200) {
+      if (!response.ok) {
+        throw new Error(response.status + " ERROR");
+      }
+
       const data = await response.json().then((json) =>
         json.results.map((data) => ({
           id: data.episode_id,
@@ -21,6 +26,8 @@ function App() {
         }))
       );
       setMovies(() => ({ hasData: data.length > 0, data: data }));
+    } catch (error) {
+      setError(error.message);
     }
 
     setIsLoading(false);
@@ -34,9 +41,12 @@ function App() {
       <section>
         {movies.hasData && <MoviesList movies={movies.data} />}
         {!isLoading && !movies.hasData && (
-          <p>No results, try to click "Fetch Movies"</p>
+          <p>
+            No results, {error ? "try again" : 'try to click "Fetch Movies"'}
+          </p>
         )}
         {isLoading && <p>Loading...</p>}
+        {!isLoading && error && <b>{error}</b>}
       </section>
     </React.Fragment>
   );
