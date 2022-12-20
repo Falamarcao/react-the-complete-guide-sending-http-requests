@@ -33,6 +33,9 @@ function App() {
     setIsLoading(false);
   }, []);
 
+  // Executes [handleFetchMovies] when the app starts, or when the function changes,
+  // but as we are using useCallback without dependencies and inputs on [handleFetchMovies],
+  // this will only be executed once.
   useEffect(() => {
     handleFetchMovies();
   }, [handleFetchMovies]);
