@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 
+import AddMovie from "./components/AddMovie";
 import MoviesList from "./components/MovieList";
 import "./App.css";
 
@@ -8,10 +9,16 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const handleAddMovie = (movie) => {
+    console.log(movie);
+  };
+
   const handleFetchMovies = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("https://swapi.dev/api/films/");
+      const response = await fetch(
+        "https://react-the-complete-guide-e2f80-default-rtdb.firebaseio.com/movies.json"
+      );
 
       if (!response.ok) {
         throw new Error(response.status + " ERROR");
@@ -42,6 +49,9 @@ function App() {
 
   return (
     <React.Fragment>
+      <section>
+        <AddMovie onAddMOvie={handleAddMovie} />
+      </section>
       <section>
         <button onClick={handleFetchMovies}>Fetch Movies</button>
       </section>
