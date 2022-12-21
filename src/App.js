@@ -4,34 +4,32 @@ import AddMovie from "./components/AddMovie";
 import MoviesList from "./components/MovieList";
 import "./App.css";
 
+const FIREBASE_URL =
+  "https://react-the-complete-guide-e2f80-default-rtdb.firebaseio.com/movies.json";
+
 function App() {
   const [movies, setMovies] = useState({ hasData: false, data: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleAddMovie = (movie) => {
-    console.log(movie);
-  };
-
   const handleFetchMovies = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        "https://react-the-complete-guide-e2f80-default-rtdb.firebaseio.com/movies.json"
-      );
+      const response = await fetch(FIREBASE_URL);
 
       if (!response.ok) {
         throw new Error(response.status + " ERROR");
       }
 
       const data = await response.json().then((json) =>
-        json.results.map((data) => ({
-          id: data.episode_id,
-          title: data.title,
-          openingText: data.opening_crawl,
-          releaseDate: data.release_date,
+        Object.keys(json).map((key) => ({
+          id: key,
+          title: json[key].title,
+          openingText: json[key].openingText,
+          releaseDate: json[key].releaseDate,
         }))
       );
+
       setMovies(() => ({ hasData: data.length > 0, data: data }));
     } catch (error) {
       setError(error.message);
@@ -39,6 +37,25 @@ function App() {
 
     setIsLoading(false);
   }, []);
+
+  const handleAddMovie = useCallback(
+    async (movie) => {
+      const response = await fetch(FIREBASE_URL, {
+        method: "POST",
+        body: JSON.stringify(movie),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error(response.status + " ERROR");
+      }
+
+      await response.json();
+
+      handleFetchMovies();
+    },
+    [handleFetchMovies]
+  );
 
   // Executes [handleFetchMovies] when the app starts, or when the function changes,
   // but as we are using useCallback without dependencies and inputs on [handleFetchMovies],
@@ -50,7 +67,7 @@ function App() {
   return (
     <React.Fragment>
       <section>
-        <AddMovie onAddMOvie={handleAddMovie} />
+        <AddMovie onAddMovie={handleAddMovie} />
       </section>
       <section>
         <button onClick={handleFetchMovies}>Fetch Movies</button>
